@@ -16,14 +16,15 @@ from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from contextlib import closing
 import codecs
 
-from Bulksms.settings import APPLICATION_SMS_URL, APPLICATION_SMS_KEY, APPLICATION_SMS_CAMPAIGN, \
-    APPLICATION_SMS_ROUTEID, APPLICATION_SMS_TYPE, APPLICATION_SMS_SENDERID
+from Bulksms.settings import APPLICATION_SMS_URL, APPLICATION_SMS_USER, APPLICATION_SMS_PASSWORD, \
+    APPLICATION_SMS_SENDER, APPLICATION_SMS_PRIORITY, APPLICATION_SMS_TYPE
 from apps.smsReports.serializers import ReportModelSerializer
 
 
 def BulkTextMessageSendingRequest(CONTACTS, MESSAGE):
     r = requests.post(
-        APPLICATION_SMS_URL + "key=" + APPLICATION_SMS_KEY + "&campaign=" + str(APPLICATION_SMS_CAMPAIGN) + "&routeid=" +str(APPLICATION_SMS_ROUTEID) + "&type=" + APPLICATION_SMS_TYPE + "&contacts=" + str(CONTACTS) + "&senderid=" + str(APPLICATION_SMS_SENDERID)+ "&msg=" + MESSAGE)
+        APPLICATION_SMS_URL + "user=" + APPLICATION_SMS_USER + "&pass=" + APPLICATION_SMS_PASSWORD + "&sender=" + APPLICATION_SMS_SENDER + "&phone=" + str(
+            CONTACTS) + "&text=" + MESSAGE + "&priority=" + APPLICATION_SMS_PRIORITY + "&stype=" + APPLICATION_SMS_TYPE)
     if r.status_code == 200:
         print(r.content)
         return Response(r.content, status=status.HTTP_200_OK)
@@ -66,9 +67,9 @@ class BulkMessageProcessView(APIView):
         mylist = []
         for row in io_string:
             mylist.append(convert(row.strip()))
-        contacts=", ".join(repr(e) for e in mylist)
-        message=BulkTextMessageSendingRequest(contacts,request.data['message'])
-        shoot_id=message.data.split("/")[1]
+        contacts = ", ".join(repr(e) for e in mylist)
+        message = BulkTextMessageSendingRequest(contacts, request.data['message'])
+        shoot_id = message.data.split("/")[1]
         listtt = dict({'reports': shoot_id})
         query_dict = QueryDict('', mutable=True)
         query_dict.update(listtt)
